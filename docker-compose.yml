@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:15.1
+    container_name: idealab_postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+    ports:
+      - '5438:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+  nodeserver:
+    build:
+      context: .
+    container_name: idealab_node
+    restart: always
+    logging:
+      driver: 'json-file'
+      options:
+        max-file: '5'
+        max-size: '10m'
+    ports:
+      - '3000:3000'
+    environment:
+      VIRTUAL_HOST: idealab.kpl.gov
+      VIRTUAL_PORT: 3000
+      LETSENCRYPT_HOST: idealab.kpl.gov
+      LETSENCRYPT_EMAIL: tomd@kpl.gov
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASE_URL: ${DATABASE_URL}
+      VITE_APP_URL: ${VITE_APP_URL}
+
+volumes:
+  db-data:
+
+networks:
+  default:
+    external: true
+    name: proxy
